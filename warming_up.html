@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>자기돌봄 아이스브레이킹 - 질문 게임</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #edf1ee;
+      --card-bg: #fffdf8;
+      --border-color: #2b2b2b;
+      --title-shadow: #c7b8ea;
+      --shadow-orange: #ea7a67;
+      --shadow-pink: #f29ca9;
+      --shadow-coral: #eb8169;
+      --shadow-rose: #ea98a3;
+      --shadow-peach: #ea7f6b;
+      --font-title: 'Jua', sans-serif;
+      --font-body: 'Noto Sans KR', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      font-family: var(--font-body);
+      color: #2b2b2b;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      overflow-x: hidden;
+    }
+
+    /* 슬라이드 캔버스 (16:9 비율 유지 & 반응형) */
+    .slide-wrapper {
+      width: 100%;
+      max-width: 1200px;
+      aspect-ratio: 16 / 9;
+      background: var(--bg-color);
+      border: 1px solid #d4dad6;
+      border-radius: 4px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 30px 48px 20px 48px;
+      position: relative;
+    }
+
+    /* 상단 슬라이드 정보 헤더 */
+    .slide-top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 15px;
+      font-weight: 500;
+      color: #555b57;
+      letter-spacing: -0.3px;
+    }
+
+    .top-left, .top-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .square-icon {
+      display: inline-block;
+      width: 11px;
+      height: 11px;
+      border: 1.8px solid #555b57;
+    }
+
+    /* 중앙 타이틀 */
+    .title-container {
+      display: flex;
+      justify-content: center;
+      margin: 10px 0 25px 0;
+    }
+
+    .game-title-box {
+      background-color: var(--card-bg);
+      border: 2px solid var(--border-color);
+      box-shadow: 5px 5px 0px var(--title-shadow);
+      padding: 12px 64px;
+      font-family: var(--font-title);
+      font-size: 32px;
+      letter-spacing: 1px;
+      color: #222;
+      border-radius: 2px;
+    }
+
+    /* 10개 카드 그리드 (2행 5열) */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      grid-template-rows: repeat(2, 1fr);
+      gap: 20px 18px;
+      flex-grow: 1;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    /* 개별 카드 컨테이너 */
+    .card-item {
+      position: relative;
+      cursor: pointer;
+      aspect-ratio: 1 / 1.06;
+      transition: transform 0.16s ease, filter 0.2s ease;
+    }
+
+    .card-item:hover {
+      transform: translateY(-4px);
+    }
+
+    .card-item:active {
+      transform: translateY(1px);
+    }
+
+    /* 카드의 오프셋 그림자 판 */
+    .card-shadow-plate {
+      position: absolute;
+      top: 7px;
+      left: 7px;
+      right: -7px;
+      bottom: -7px;
+      background-color: var(--shadow-orange);
+      border: 2px solid var(--border-color);
+      border-radius: 3px;
+      z-index: 1;
+    }
+
+    /* 카드의 본체 */
+    .card-face {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: var(--card-bg);
+      border: 2px solid var(--border-color);
+      border-radius: 3px;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+    }
+
+    /* 사진 원형 클리핑 */
+    .circle-thumb {
+      width: 82%;
+      aspect-ratio: 1 / 1;
+      border-radius: 50%;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #f0ede6;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
+    }
+
+    .circle-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      pointer-events: none;
+    }
+
+    /* 하단 번호 뱃지 */
+    .number-tag {
+      position: absolute;
+      bottom: 2px;
+      font-family: var(--font-title);
+      font-size: 34px;
+      color: #fff9d7;
+      text-shadow: 
+        -2px -2px 0 var(--border-color),  
+         2px -2px 0 var(--border-color),
+        -2px  2px 0 var(--border-color),
+         2px  2px 0 var(--border-color),
+         3px  4px 0 #1b1b1b;
+      z-index: 3;
+      pointer-events: none;
+    }
+
+    /* 이미 열어본 카드 상태 */
+    .card-item.visited .card-face {
+      background-color: #ebeae6;
+      filter: grayscale(40%);
+    }
+
+    .card-item.visited::after {
+      content: '✓';
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      background: #27ae60;
+      color: white;
+      font-size: 13px;
+      font-weight: bold;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 4;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    /* 하단 푸터 */
+    .slide-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: #858b88;
+      padding-top: 4px;
+    }
+
+    .controls-bar {
+      display: flex;
+      gap: 12px;
+    }
+
+    .tool-btn {
+      background: #fff;
+      border: 1.5px solid #2b2b2b;
+      border-radius: 4px;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-family: var(--font-body);
+      font-weight: 600;
+      color: #333;
+      cursor: pointer;
+      box-shadow: 2px 2px 0px #aaa;
+      transition: all 0.1s;
+    }
+
+    .tool-btn:hover {
+      background: #f7f7f7;
+      transform: translateY(-1px);
+    }
+
+    .tool-btn:active {
+      transform: translateY(1px);
+      box-shadow: 1px 1px 0px #aaa;
+    }
+
+    /* 질문 팝업 모달 */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(20, 24, 22, 0.65);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 20px;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+      animation: popIn 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.92); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .modal-box {
+      width: 100%;
+      max-width: 620px;
+      background: #fffefb;
+      border: 3px solid #2b2b2b;
+      box-shadow: 8px 8px 0px #2b2b2b;
+      border-radius: 12px;
+      padding: 36px 36px 28px 36px;
+      position: relative;
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+
+    .modal-thumb {
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      border: 2px solid #2b2b2b;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .modal-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .modal-badge {
+      font-family: var(--font-title);
+      font-size: 18px;
+      color: #ea7a67;
+      margin-bottom: 2px;
+    }
+
+    .modal-keyword {
+      font-size: 22px;
+      font-weight: 800;
+      color: #222;
+      letter-spacing: -0.5px;
+    }
+
+    .modal-question {
+      background: #f6f8f5;
+      border: 2px solid #333;
+      border-radius: 8px;
+      padding: 20px;
+      font-size: 21px;
+      font-weight: 700;
+      line-height: 1.45;
+      color: #1a1a1a;
+      margin-bottom: 18px;
+      box-shadow: inset 2px 2px 0px rgba(0,0,0,0.04);
+    }
+
+    .modal-subquestions {
+      background: #fff;
+      border: 1.5px dashed #bcc4be;
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin-bottom: 26px;
+    }
+
+    .sub-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #727b76;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .sub-list {
+      list-style-type: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 14px;
+      color: #444;
+      line-height: 1.4;
+    }
+
+    .sub-list li::before {
+      content: '🌱 ';
+      font-size: 12px;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+
+    .modal-btn {
+      padding: 10px 22px;
+      font-size: 15px;
+      font-weight: 700;
+      border-radius: 6px;
+      border: 2px solid #2b2b2b;
+      cursor: pointer;
+      transition: all 0.12s;
+    }
+
+    .btn-close {
+      background: #f0ede6;
+      color: #333;
+      box-shadow: 3px 3px 0px #333;
+    }
+
+    .btn-done {
+      background: #4ecdc4;
+      color: #102e2c;
+      box-shadow: 3px 3px 0px #333;
+    }
+
+    .modal-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .modal-btn:active {
+      transform: translateY(1px);
+      box-shadow: 1px 1px 0px #333;
+    }
+
+    /* 질문 편집 모달 */
+    .edit-modal-box {
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .edit-row {
+      margin-bottom: 14px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .edit-row label {
+      display: block;
+      font-weight: bold;
+      font-size: 13px;
+      margin-bottom: 4px;
+      color: #333;
+    }
+
+    .edit-input {
+      width: 100%;
+      padding: 8px 10px;
+      font-size: 14px;
+      border: 1.5px solid #aaa;
+      border-radius: 4px;
+      font-family: inherit;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="slide-wrapper" id="slideCanvas">
+    <!-- 상단 바 -->
+    <div class="slide-top-bar">
+      <div class="top-left">
+        <span class="square-icon"></span>
+        <span>01 시작하기</span>
+      </div>
+      <div class="top-right">
+        <span class="square-icon"></span>
+        <span>01 - 4</span>
+      </div>
+    </div>
+
+    <!-- 타이틀 -->
+    <div class="title-container">
+      <div class="game-title-box">질문 게임</div>
+    </div>
+
+    <!-- 10개 카드 그리드 -->
+    <div class="cards-grid" id="cardsContainer">
+      <!-- 자바스크립트로 10개 카드가 렌더링됩니다 -->
+    </div>
+
+    <!-- 하단 바 -->
+    <div class="slide-footer">
+      <div class="controls-bar">
+        <button class="tool-btn" onclick="toggleFullScreen()">🖥️ 전체화면 (F11)</button>
+        <button class="tool-btn" onclick="openEditModal()">✏️ 질문 커스텀 수정</button>
+        <button class="tool-btn" onclick="resetVisited()">🔄 체크 초기화</button>
+      </div>
+      <div>Copyrightⓒ 2022. 박노을. All Rights Reserved.</div>
+    </div>
+  </div>
+
+  <!-- 질문 확인 팝업 모달 -->
+  <div class="modal-overlay" id="questionModal" onclick="closeOnBackdrop(event)">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-thumb">
+          <img id="modalImg" src="" alt="상징 썸네일">
+        </div>
+        <div>
+          <div class="modal-badge" id="modalNumber">No. 1</div>
+          <div class="modal-keyword" id="modalKeyword">하늘과 구름</div>
+        </div>
+      </div>
+
+      <div class="modal-question" id="modalMainQ">
+        질문이 이곳에 표시됩니다.
+      </div>
+
+      <div class="modal-subquestions">
+        <div class="sub-title">진행자 가이드 / 더 나눠볼 이야기</div>
+        <ul class="sub-list" id="modalSubList">
+          <!-- 서브 질문 목록 -->
+        </ul>
+      </div>
+
+      <div class="modal-actions">
+        <button class="modal-btn btn-close" onclick="closeModal()">그냥 닫기</button>
+        <button class="modal-btn btn-done" onclick="markAsAnswered()">이야기 완료 ✓</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 질문 편집 모달 -->
+  <div class="modal-overlay" id="editModal" onclick="closeEditOnBackdrop(event)">
+    <div class="modal-box edit-modal-box">
+      <h2 style="font-family: var(--font-title); font-size: 24px; margin-bottom: 16px;">질문 내용 수정하기</h2>
+      <p style="font-size: 13px; color: #666; margin-bottom: 20px;">
+        상담 그룹이나 워크숍 대상에 맞춰 10가지 질문을 자유롭게 수정할 수 있습니다. (브라우저에 자동 저장)
+      </p>
+      <div id="editInputsContainer"></div>
+      <div class="modal-actions" style="margin-top: 20px;">
+        <button class="modal-btn btn-close" onclick="closeEditModal()">취소</button>
+        <button class="modal-btn btn-done" onclick="saveCustomQuestions()">저장하기</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 10가지 자기돌봄 질문 데이터 세트
+    const defaultGameData = [
+      {
+        id: 1,
+        keyword: "숨 고르기 (하늘)",
+        img: "https://images.unsplash.com/photo-1534088568595-a066f410bcda?w=500&auto=format&fit=crop&q=80",
+        shadow: "#ea7a67",
+        question: "복잡한 생각을 멈추고 멍하니 올려다보고 싶은 나만의 하늘이나 시간대는 언제인가요?",
+        guide: [
+          "최근에 멍하니 하늘이나 풍경을 바라본 적이 있나요?",
+          "노을 질 때, 맑은 정오, 비 오기 직전 중 어떤 분위기를 가장 좋아하시나요?"
+        ]
+      },
+      {
+        id: 2,
+        keyword: "자연의 쉼 (바다)",
+        img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=500&auto=format&fit=crop&q=80",
+        shadow: "#f29ca9",
+        question: "마음이 지치고 답답할 때, 머릿속으로 당장 떠나고 싶은 나만의 '비상 쉼터'는 어디인가요?",
+        guide: [
+          "파도 소리처럼 나를 가만히 위로해 주는 자연의 소리가 있나요?",
+          "물가(바다/강)와 숲 중 나에게 에너지를 더 주는 장소는?"
+        ]
+      },
+      {
+        id: 3,
+        keyword: "환기 루틴 (나무)",
+        img: "https://images.unsplash.com/photo-1448375240586-882707db888b?w=500&auto=format&fit=crop&q=80",
+        shadow: "#eb8169",
+        question: "하루 중 가볍게 바깥바람을 쐬거나 걷고 싶어지는 나만의 짧은 산책 루틴이 있나요?",
+        guide: [
+          "집이나 회사 주변에서 좋아하는 소박한 골목길이나 공원이 있나요?",
+          "걷는 동안에는 주로 무슨 생각을 하거나 어떤 감각에 집중하시나요?"
+        ]
+      },
+      {
+        id: 4,
+        keyword: "달콤한 보상 (디저트)",
+        img: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500&auto=format&fit=crop&q=80",
+        shadow: "#ea98a3",
+        question: "고된 하루를 버텨낸 나에게 선물하고 싶은 즉각적인 '소확행 푸드'는 무엇인가요?",
+        guide: [
+          "스트레스가 극에 달했을 때 찾게 되는 특효약 음식이 있나요?",
+          "누군가와 함께 먹는 맛 vs 나 혼자 음미하는 맛 중 선호하는 방식은?"
+        ]
+      },
+      {
+        id: 5,
+        keyword: "마음의 주파수 (음악)",
+        img: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&auto=format&fit=crop&q=80",
+        shadow: "#ea7f6b",
+        question: "불안하거나 가라앉을 때, 나를 다정하게 안아주는 '인생 플레이리스트'나 가수가 있나요?",
+        guide: [
+          "이 노래를 들으면 언제나 마음이 편안해지는 곡 1곡을 추천해 주세요.",
+          "가사가 있는 노래를 좋아하시나요, 잔잔한 연주곡/백색소음을 좋아하시나요?"
+        ]
+      },
+      {
+        id: 6,
+        keyword: "이완과 게으름 (고양이)",
+        img: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=500&auto=format&fit=crop&q=80",
+        shadow: "#ea7a67",
+        question: "죄책감 없이 온전히 늘어져서 쉴 때, 내가 가장 좋아하는 자세나 휴식 방법은?",
+        guide: [
+          "아무 일정도 없는 완벽한 주말 하루가 주어진다면 무엇을 하며 게으름을 피우고 싶나요?",
+          "평소 나에게 '쉼'을 허락해 주는 것이 쉬운 편인가요, 어려운 편인가요?"
+        ]
+      },
+      {
+        id: 7,
+        keyword: "작은 기쁨 (꽃)",
+        img: "https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=500&auto=format&fit=crop&q=80",
+        shadow: "#f29ca9",
+        question: "바라보는 것만으로도 나를 슬며시 미소 짓게 만드는 일상 속의 작고 예쁜 존재는?",
+        guide: [
+          "길가에 핀 들꽃, 계절의 변화, 귀여운 동물 등 나를 설레게 하는 순간은?",
+          "최근 내 시선이 가장 오래 머물렀던 아름다운 장면은 무엇이었나요?"
+        ]
+      },
+      {
+        id: 8,
+        keyword: "활력 충전 (주스)",
+        img: "https://images.unsplash.com/photo-1613478223719-2ab802602423?w=500&auto=format&fit=crop&q=80",
+        shadow: "#eb8169",
+        question: "나른하거나 피로가 몰려올 때, 나를 번쩍 깨워주는 리프레시 음료나 루틴이 있나요?",
+        guide: [
+          "모닝커피, 차가운 레몬수, 달달한 라떼 등 나만의 시작 음료는?",
+          "머리를 식히고 활력을 되찾는 나만의 5분 환기법은?"
+        ]
+      },
+      {
+        id: 9,
+        keyword: "나만의 침묵 (책과 여유)",
+        img: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=500&auto=format&fit=crop&q=80",
+        shadow: "#ea98a3",
+        question: "세상의 소음을 끄고, 오롯이 나 자신과 마주할 때 즐겨 하는 나만의 취미는 무엇인가요?",
+        guide: [
+          "독서, 일기 쓰기, 필사, 그림 그리기 등 정적인 시간 중 가장 좋아하는 것은?",
+          "하루 중 나에게 온전히 집중할 수 있는 나만의 '골든 타임'은 언제인가요?"
+        ]
+      },
+      {
+        id: 10,
+        keyword: "안전지대 (캔들과 밤)",
+        img: "https://images.unsplash.com/photo-1603006905003-be475563bc59?w=500&auto=format&fit=crop&q=80",
+        shadow: "#ea7f6b",
+        question: "하루를 마치고 방에 들어왔을 때, 나를 가장 포근하고 아늑하게 감싸주는 것은 무엇인가요?",
+        guide: [
+          "좋아하는 조명 밝기, 이불의 감촉, 방 안의 향기(인센스/캔들)가 있나요?",
+          "잠들기 직전 마음을 편안하게 만들기 위해 꼭 하는 나만의 나이트 루틴은?"
+        ]
+      }
+    ];
+
+    let gameData = JSON.parse(localStorage.getItem('self_care_game_data')) || defaultGameData;
+    let visitedCards = JSON.parse(localStorage.getItem('self_care_visited')) || [];
+    let currentCardId = null;
+
+    // 가벼운 효과음 생성 (Web Audio API)
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playPopSound(freq = 440, type = 'sine') {
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.18);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.18);
+      } catch (e) {}
+    }
+
+    // 카드 렌더링
+    function renderCards() {
+      const container = document.getElementById('cardsContainer');
+      container.innerHTML = '';
+
+      gameData.forEach(card => {
+        const isVisited = visitedCards.includes(card.id);
+        const cardDiv = document.createElement('div');
+        cardDiv.className = `card-item ${isVisited ? 'visited' : ''}`;
+        cardDiv.onclick = () => openModal(card.id);
+
+        cardDiv.innerHTML = `
+          <div class="card-shadow-plate" style="background-color: ${card.shadow};"></div>
+          <div class="card-face">
+            <div class="circle-thumb">
+              <img src="${card.img}" alt="카드 ${card.id}">
+            </div>
+            <div class="number-tag">${card.id}</div>
+          </div>
+        `;
+        container.appendChild(cardDiv);
+      });
+    }
+
+    // 팝업 열기
+    function openModal(cardId) {
+      playPopSound(520, 'triangle');
+      currentCardId = cardId;
+      const data = gameData.find(item => item.id === cardId);
+      if (!data) return;
+
+      document.getElementById('modalImg').src = data.img;
+      document.getElementById('modalNumber').textContent = `No. ${data.id}`;
+      document.getElementById('modalKeyword').textContent = data.keyword;
+      document.getElementById('modalMainQ').textContent = `"${data.question}"`;
+
+      const subList = document.getElementById('modalSubList');
+      subList.innerHTML = '';
+      data.guide.forEach(text => {
+        const li = document.createElement('li');
+        li.textContent = text;
+        subList.appendChild(li);
+      });
+
+      document.getElementById('questionModal').classList.add('active');
+    }
+
+    // 팝업 닫기
+    function closeModal() {
+      playPopSound(340, 'sine');
+      document.getElementById('questionModal').classList.remove('active');
+    }
+
+    // 이야기 완료 체크
+    function markAsAnswered() {
+      if (currentCardId && !visitedCards.includes(currentCardId)) {
+        visitedCards.push(currentCardId);
+        localStorage.setItem('self_care_visited', JSON.stringify(visitedCards));
+        renderCards();
+      }
+      playPopSound(660, 'sine');
+      closeModal();
+    }
+
+    function closeOnBackdrop(e) {
+      if (e.target.id === 'questionModal') closeModal();
+    }
+
+    // 초기화
+    function resetVisited() {
+      if (confirm("모든 카드의 완료(✓) 표시를 초기화할까요?")) {
+        visitedCards = [];
+        localStorage.removeItem('self_care_visited');
+        renderCards();
+      }
+    }
+
+    // 전체화면 토글
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => alert("전체화면 모드를 지원하지 않습니다."));
+      } else {
+        document.exitFullscreen();
+      }
+    }
+
+    // 편집 모달 관리
+    function openEditModal() {
+      const container = document.getElementById('editInputsContainer');
+      container.innerHTML = '';
+      gameData.forEach(item => {
+        const row = document.createElement('div');
+        row.className = 'edit-row';
+        row.innerHTML = `
+          <label>카드 ${item.id}번 (${item.keyword}) 질문</label>
+          <input type="text" class="edit-input" id="edit_q_${item.id}" value="${item.question}">
+        `;
+        container.appendChild(row);
+      });
+      document.getElementById('editModal').classList.add('active');
+    }
+
+    function closeEditModal() {
+      document.getElementById('editModal').classList.remove('active');
+    }
+
+    function closeEditOnBackdrop(e) {
+      if (e.target.id === 'editModal') closeEditModal();
+    }
+
+    function saveCustomQuestions() {
+      gameData.forEach(item => {
+        const input = document.getElementById(`edit_q_${item.id}`);
+        if (input) item.question = input.value;
+      });
+      localStorage.setItem('self_care_game_data', JSON.stringify(gameData));
+      closeEditModal();
+      alert("질문이 성공적으로 저장되었습니다!");
+    }
+
+    // 초기 실행
+    renderCards();
+  </script>
+</body>
+</html>
+```eof
+
+---
+
+### 💡 PPT에서 직접 재현하고 싶을 때 만드는 2가지 방법
+
+만약 웹페이지 대신 **순수 파워포인트 파일(.pptx)** 안에서만 똑같이 작동하게 만들고 싶으시다면 아래 두 가지 방법 중 편한 방식을 쓰시면 됩니다.
+
+#### 방법 1. 슬라이드 하이퍼링크 방식 (가장 추천! 제작 시간 5분)
+1. **메인 슬라이드 (현재 슬라이드):**
+   * 1~10번 카드들을 배치합니다.
+2. **질문 슬라이드 10장 추가:**
+   * 슬라이드 2번부터 11번까지 각각 **1번 질문, 2번 질문... 10번 질문** 슬라이드를 만듭니다.
+   * 각 질문 슬라이드 구석에 작은 **`[← 메인으로 돌아가기]`** 버튼을 하나 만듭니다.
+3. **하이퍼링크 걸기:**
+   * 메인 슬라이드의 1번 카드 도형을 클릭하고 `Ctrl + K` (링크 삽입) → **[현재 문서]** → **[슬라이드 2]** 선택.
+   * 같은 방식으로 2~10번 카드도 각각 해당 질문 슬라이드로 링크합니다.
+   * 각 질문 슬라이드의 `[← 메인으로 돌아가기]` 버튼은 **[슬라이드 1(메인)]**으로 링크를 걸어주면 클릭 한 번에 왔다가 돌아가는 직관적인 보드가 완성됩니다.
+
+#### 방법 2. 애니메이션 트리거(Trigger) 모달 방식 (한 슬라이드 안에서 팝업 띄우기)
+1. 메인 슬라이드 중앙에 팝업창 모양의 사각형(질문 내용 + 닫기 버튼)을 만듭니다.
+2. 이 팝업창 도형에 **[나타내기 (예: 확대/축소)]** 애니메이션을 줍니다.
+3. 애니메이션 창에서 해당 애니메이션을 더블클릭하고 **[타이밍]** → **[시작 효과(Trigger)]** → **[다음 개체를 클릭할 때 효과 시작: 1번 카드]**를 지정합니다.
+4. 닫을 때는 팝업창에 **[사라지기]** 애니메이션을 주고, 트리거를 **[닫기 버튼]**으로 걸어두면 클릭할 때 팝업이 떴다가 사라집니다.
+
+---
+
+### 🌟 생성된 웹페이지 활용 팁
+* 브라우저에서 파일을 더블 클릭해 열고 **[🖥️ 전체화면 (F11)]**을 누르면 빔프로젝터나 모니터에 군더더기 없는 슬라이드 화면으로 꽉 차게 표시됩니다.
+* 참여자가 번호를 고를 때마다 카드를 클릭하면 통통 튀는 효과음과 함께 질문 창이 뜨며, 이야기를 마치고 **[이야기 완료 ✓]**를 누르면 카드에 초록색 체크가 남아 어떤 번호가 남았는지 한눈에 확인할 수 있습니다.파워포인트(PPT) 내에서 구현하는 방법과 간단한 웹페이지(HTML/JS)로 구현하는 방법 두 가지 모두 가능합니다. 인터랙션의 자유도와 유지보수 면에서는 웹페이지가 훨씬 깔끔하지만, 발표 환경에 맞춰 선택할 수 있습니다.
+
+---
+
+**1. PPT 슬라이드로 구현하는 법**
+
+PPT에서 '클릭 시 팝업'을 만드는 가장 직관적인 방법은 **애니메이션의 트리거(Trigger)** 기능 또는 **슬라이드 하이퍼링크**를 사용하는 것입니다.
+
+* **트리거 애니메이션 방식 (단일 슬라이드)**
+  1. 슬라이드에 기본 배경 버튼(예: 번호 카드 또는 키워드 박스)을 배치합니다.
+  2. 질문이 적힌 팝업창 모양의 사각형(또는 카드 도형)과 닫기(X) 아이콘을 만들어 그 위에 얹습니다.
+  3. 팝업 도형에 `나타내기(페이드 등)` 애니메이션을 추가하고, 효과 옵션의 **트리거**를 기본 버튼 클릭 시 실행되도록 설정합니다.
+  4. 닫기(X) 아이콘에는 팝업 도형이 사라지는 `끝내기` 애니메이션을 걸고, 트리거를 닫기 아이콘 자체 클릭으로 지정합니다.
+* **하이퍼링크 방식 (슬라이드 분기)**
+  * 메인 선택 슬라이드를 두고, 각 카드를 클릭하면 해당 질문만 크게 띄운 별도 슬라이드로 이동하게 링크를 겁니다. 팝업 슬라이드의 여백이나 닫기 버튼을 누르면 다시 메인 슬라이드로 돌아오게 설정하면 제작이 훨씬 단순해집니다.
+
+---
+
+**2. 인터랙티브 웹페이지로 제작하는 법**
+
+웹페이지로 만들면 클릭 반응이 부드럽고, 모바일이나 태블릿에서도 발표·진행용으로 유연하게 띄울 수 있어 추천합니다. 
+
+단일 HTML 파일 하나로 바로 브라우저에서 열 수 있는 기본 구조 예시입니다.
+
+```html
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #f8f9fa;
+      padding: 40px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 160px);
+      gap: 16px;
+      margin-top: 24px;
+    }
+    .card {
+      background: #ffffff;
+      border: 2px solid #e9ecef;
+      border-radius: 12px;
+      padding: 24px;
+      text-align: center;
+      cursor: pointer;
+      font-weight: bold;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    /* 팝업 모달 */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.4);
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-box {
+      background: #ffffff;
+      padding: 32px 40px;
+      border-radius: 16px;
+      max-width: 480px;
+      text-align: center;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+    .close-btn {
+      margin-top: 20px;
+      padding: 8px 20px;
+      background: #495057;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>질문 카드를 선택하세요</h2>
+  <div class="grid">
+    <div class="card" onclick="openModal('첫 번째 질문 내용입니다.')">질문 1</div>
+    <div class="card" onclick="openModal('두 번째 질문 내용입니다.')">질문 2</div>
+    <div class="card" onclick="openModal('세 번째 질문 내용입니다.')">질문 3</div>
+  </div>
+
+  <div class="modal-overlay" id="modal" onclick="closeModal(event)">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <p id="modal-text" style="font-size: 1.25rem; line-height: 1.6;"></p>
+      <button class="close-btn" onclick="closeModal()">닫기</button>
+    </div>
+  </div>
+
+  <script>
+    function openModal(text) {
+      document.getElementById('modal-text').innerText = text;
+      document.getElementById('modal').style.display = 'flex';
+    }
+    function closeModal() {
+      document.getElementById('modal').style.display = 'none';
+    }
+  </script>
+</body>
+</html>
