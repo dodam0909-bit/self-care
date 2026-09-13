@@ -154,7 +154,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 10px 4px;
+      padding: 12px 6px;
       border: 1px solid var(--border-color);
       border-radius: 8px;
       font-size: 0.82rem;
@@ -165,6 +165,7 @@
       background: #fafbfc;
       user-select: none;
       line-height: 1.35;
+      min-height: 48px;
     }
 
     .option-label input {
@@ -353,7 +354,6 @@
 <body>
 
 <div class="container">
-  <!-- 언어 전환 토글 -->
   <div class="lang-toggle-bar">
     <button type="button" class="lang-btn" id="lang-toggle-btn" onclick="toggleLanguage()">
       🌐 English로 보기
@@ -434,11 +434,12 @@ const i18n = {
     reflectionLow: "<strong>가장 낮은 영역:</strong> 죄책감을 갖지 마세요. 그동안 신경 쓸 여력이 부족할 만큼 애써왔다는 신호입니다. 오늘 나에게 줄 수 있는 <strong>'단 5분짜리 작은 쉼'</strong>은 무엇일까요?",
     footerCopy: "© 2026 <strong>심리상담사 박도담</strong>. All rights reserved.",
     profileLink: "프로필 페이지",
+    // 숫자 제거: 깔끔한 문구만 노출
     options: [
-      { val: 0, label: "0점<br>(전혀/거의 그렇지 않다)" },
-      { val: 1, label: "1점<br>(가끔 그렇다)" },
-      { val: 2, label: "2점<br>(대체로 그렇다)" },
-      { val: 3, label: "3점<br>(거의/항상 그렇다)" }
+      { val: 0, label: "전혀/거의<br>그렇지 않다" },
+      { val: 1, label: "가끔 그렇다" },
+      { val: 2, label: "대체로 그렇다" },
+      { val: 3, label: "거의/항상<br>그렇다" }
     ],
     status: {
       thriving: {
@@ -536,10 +537,10 @@ const i18n = {
     footerCopy: "© 2026 <strong>Psychotherapist Dodam Park</strong>. All rights reserved.",
     profileLink: "Profile Page",
     options: [
-      { val: 0, label: "0 pt<br>(Never / Rarely)" },
-      { val: 1, label: "1 pt<br>(Sometimes)" },
-      { val: 2, label: "2 pts<br>(Often)" },
-      { val: 3, label: "3 pts<br>(Almost Always)" }
+      { val: 0, label: "Never / Rarely" },
+      { val: 1, label: "Sometimes" },
+      { val: 2, label: "Often" },
+      { val: 3, label: "Almost Always" }
     ],
     status: {
       thriving: {
@@ -650,7 +651,6 @@ function renderUI() {
     </ul>
   `;
 
-  // 문항 렌더링
   const container = document.getElementById("questions-container");
   container.innerHTML = "";
 
@@ -737,7 +737,6 @@ function calculateResults(shouldScroll = true) {
     chartColors.push(domain.color);
   });
 
-  // 종합 점수 해석 (60점 만점 기준)
   const scoreBadge = document.getElementById("total-score");
   const statusEl = document.getElementById("result-status");
   const descEl = document.getElementById("result-desc");
@@ -765,7 +764,6 @@ function calculateResults(shouldScroll = true) {
   statusEl.style.color = statusColor;
   descEl.textContent = currentStatus.desc;
 
-  // 영역별 맞춤 분석
   let highestDomain = domainScores[0];
   let lowestDomain = domainScores[0];
 
@@ -789,7 +787,6 @@ function calculateResults(shouldScroll = true) {
     `;
   }
 
-  // 영역별 바 차트 갱신
   const domainContainer = document.getElementById("domain-results");
   domainContainer.innerHTML = "";
 
@@ -809,7 +806,6 @@ function calculateResults(shouldScroll = true) {
     domainContainer.appendChild(itemDiv);
   });
 
-  // 파이(도넛) 차트 갱신
   const ctx = document.getElementById('carePieChart').getContext('2d');
   if (chartInstance) {
     chartInstance.destroy();
