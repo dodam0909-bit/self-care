@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>자기돌봄(Self-Care) 20문항 자가진단 | 상담사 박도담</title>
+  <!-- 차트 렌더링을 위한 Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg-color: #f7f9fa;
+      --card-bg: #ffffff;
+      --primary: #4a6fa5;
+      --primary-hover: #3b5982;
+      --border-color: #e5e9f0;
+      --text-main: #2e3440;
+      --text-muted: #5e6678;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      line-height: 1.6;
+      padding: 24px 16px 40px;
+    }
+
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    header {
+      background-color: var(--card-bg);
+      border-radius: 16px;
+      padding: 28px 24px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+      margin-bottom: 24px;
+      border: 1px solid var(--border-color);
+    }
+
+    h1 {
+      font-size: 1.45rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    .creator-intro {
+      font-size: 0.92rem;
+      color: var(--text-main);
+      line-height: 1.7;
+      text-align: center;
+      margin-bottom: 16px;
+      word-break: keep-all;
+    }
+
+    .intro-box {
+      background-color: #eef2f7;
+      border-left: 4px solid var(--primary);
+      padding: 14px 16px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .section-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin: 32px 0 8px;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    .question-card {
+      background-color: var(--card-bg);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 14px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    }
+
+    .question-text {
+      font-size: 0.98rem;
+      font-weight: 600;
+      margin-bottom: 14px;
+      color: var(--text-main);
+    }
+
+    .question-tag {
+      color: var(--primary);
+      font-weight: 700;
+      margin-right: 4px;
+    }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    @media (max-width: 480px) {
+      .options-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .option-label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 6px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s ease;
+      background: #fafbfc;
+    }
+
+    .option-label input {
+      display: none;
+    }
+
+    .option-label:hover {
+      border-color: var(--primary);
+      background-color: #f0f4f9;
+    }
+
+    .option-label.active {
+      background-color: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+      font-weight: 600;
+    }
+
+    .btn-submit {
+      display: block;
+      width: 100%;
+      padding: 16px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #ffffff;
+      background-color: var(--primary);
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      margin-top: 32px;
+      box-shadow: 0 4px 12px rgba(74, 111, 165, 0.25);
+      transition: background 0.2s ease;
+    }
+
+    .btn-submit:hover {
+      background-color: var(--primary-hover);
+    }
+
+    /* 결과 모달/컨테이너 */
+    #result-container {
+      display: none;
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 32px 24px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      border: 1px solid var(--border-color);
+      margin-top: 24px;
+    }
+
+    .result-header {
+      text-align: center;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 20px;
+      margin-bottom: 24px;
+    }
+
+    .total-score-badge {
+      display: inline-block;
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: var(--primary);
+      margin: 8px 0;
+    }
+
+    .result-status {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .result-desc {
+      font-size: 0.92rem;
+      color: var(--text-muted);
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .chart-box {
+      position: relative;
+      width: 100%;
+      max-width: 320px;
+      margin: 0 auto 28px;
+    }
+
+    .domain-list {
+      margin-bottom: 28px;
+    }
+
+    .domain-item {
+      margin-bottom: 16px;
+    }
+
+    .domain-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.92rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .progress-bar-bg {
+      background: #e5e9f0;
+      border-radius: 8px;
+      height: 10px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--primary);
+      border-radius: 8px;
+      transition: width 0.4s ease;
+    }
+
+    .reflection-box {
+      background: #fdfbf7;
+      border: 1px solid #ebd8c8;
+      border-radius: 10px;
+      padding: 18px;
+      margin-top: 20px;
+    }
+
+    .reflection-box h4 {
+      color: #a65839;
+      font-size: 0.95rem;
+      margin-bottom: 8px;
+    }
+
+    .reflection-box ul {
+      padding-left: 20px;
+      font-size: 0.88rem;
+      color: #4c4f56;
+    }
+
+    .reflection-box li {
+      margin-bottom: 6px;
+    }
+
+    /* 푸터 및 저작권 스타일 */
+    footer {
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border-color);
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.8;
+    }
+
+    footer a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 6px;
+      flex-wrap: wrap;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>📋 자기돌봄(Self-Care) 자가진단</h1>
+    <div class="creator-intro">
+      모두가 일상 속에서 스스로를 잘 돌보고 있는지 편안히 돌아보고,<br>
+      스스로를 더 따뜻하게 보살피는 데 도움이 되기를 바라는 마음으로 구성한 체크리스트입니다.
+    </div>
+    <div class="intro-box">
+      이 검사는 나를 평가하기 위한 시험지가 아닙니다. 지금 내 에너지가 어디에 닿고 있는지, 잠시 소홀했던 영역은 어디인지 <strong>판단 없이 부드럽게 알아차리기 위한 지도</strong>입니다.
+    </div>
+  </header>
+
+  <form id="quiz-form">
+    <div id="questions-container"></div>
+    <button type="submit" class="btn-submit">진단 결과 확인하기</button>
+  </form>
+
+  <div id="result-container">
+    <div class="result-header">
+      <p style="font-size: 0.9rem; color: var(--text-muted);">나의 자기돌봄 종합 점수</p>
+      <div class="total-score-badge"><span id="total-score">0</span> <span style="font-size: 1.1rem; color: var(--text-muted);">/ 80점</span></div>
+      <div id="result-status" class="result-status"></div>
+      <p id="result-desc" class="result-desc"></p>
+    </div>
+
+    <!-- 파이(도넛) 차트 -->
+    <div class="chart-box">
+      <canvas id="carePieChart"></canvas>
+    </div>
+
+    <div class="domain-list">
+      <h3 style="font-size: 1.05rem; margin-bottom: 16px; color: var(--text-main);">📊 영역별 점수 프로필 (각 20점 만점)</h3>
+      <div id="domain-results"></div>
+    </div>
+
+    <div class="reflection-box">
+      <h4>💬 머물러보기 위한 셀프 성찰</h4>
+      <ul>
+        <li><strong>가장 높은 영역:</strong> 현재 지친 일상 속에서 나를 안전하게 지탱해 주는 핵심 버팀목입니다.</li>
+        <li><strong>가장 낮은 영역:</strong> 죄책감을 갖지 마세요. 그동안 신경 쓸 여력이 부족할 만큼 애써왔다는 신호입니다. 오늘 나에게 줄 수 있는 <strong>'단 5분짜리 작은 쉼'</strong>은 무엇일까요?</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <p>© 2026 <strong>상담사 박도담</strong>. All rights reserved.</p>
+    <div class="footer-links">
+      <span>📧 <a href="mailto:dodam0909@gmail.com">dodam0909@gmail.com</a></span>
+      <span>🔗 <a href="https://bit.ly/walk_tgt" target="_blank" rel="noopener noreferrer">프로필 페이지</a></span>
+    </div>
+  </footer>
+</div>
+
+<script>
+let chartInstance = null;
+
+const domains = [
+  {
+    title: "1. 신체적 돌봄",
+    fullTitle: "1. 신체적 돌봄 (Physical)",
+    desc: "신체 감각 인지, 생리적 안정, 자율신경계 조절 및 회복",
+    color: "#5e81ac",
+    items: [
+      { id: "q1", tag: "[수면]", text: "하루를 살아가기에 충분한 시간과 질 좋은 수면을 취하고 있나요?" },
+      { id: "q2", tag: "[영양 및 수분]", text: "규칙적으로, 내 몸에 좋은 식사를 챙기며, 적절한 수분을 섭취하고 있나요?" },
+      { id: "q3", tag: "[신경계 이완]", text: "심호흡, 스트레칭, 느린 산책 등 긴장된 몸과 감각을 가라앉히는 활동을 정기적으로 하고 있나요?" },
+      { id: "q4", tag: "[신체 활동]", text: "규칙적으로 건강을 유지하거나 개선할 수 있는 움직임(운동)을 하고 있나요?" },
+      { id: "q5", tag: "[건강 관리]", text: "몸에 이상 신호나 통증이 느껴질 때, 방치하지 않고 적절한 조치(휴식, 병원 진료, 약 복용 등)를 취하고 있나요?" }
+    ]
+  },
+  {
+    title: "2. 정서적 돌봄",
+    fullTitle: "2. 정서적 돌봄 (Emotional)",
+    desc: "감정 수용, 자기자비, 안전한 정서 표출 및 심리적 회복",
+    color: "#a3be8c",
+    items: [
+      { id: "q6", tag: "[감정 수용]", text: "불안, 분노, 슬픔 등 다루기 힘든 감정이 올라올 때, 비판하거나 억누르지 않고 '그럴 수 있다'며 있는 그대로 인정해 주고 있나요?" },
+      { id: "q7", tag: "[자기자비]", text: "실수나 실패를 마주했을 때, 스스로를 다그치기보다 소중한 친구를 대하듯 자신에게 다정하게 대하고 있나요?" },
+      { id: "q8", tag: "[정서 표현]", text: "글쓰기, 그림 그리기 등과 같이 안전하게 내 마음을 표현하고 스트레스를 해소할 수 있는 방법이 있나요?" },
+      { id: "q9", tag: "[기분 전환과 안도감]", text: "일상 속에서 소소한 즐거움, 안도감, 평온함을 느낄 수 있는 나만의 회복 활동을 하고 있나요?" },
+      { id: "q10", tag: "[자체적 인정]", text: "타인의 평가나 승인에만 의존하지 않고, 내가 쏟은 노력과 수고를 스스로 알아주고 격려해 주고 있나요?" }
+    ]
+  },
+  {
+    title: "3. 인지적 돌봄",
+    fullTitle: "3. 인지적 돌봄 (Intellectual)",
+    desc: "인지적 휴식, 심리적 탈밀착, 건강한 한계 설정(Boundaries)",
+    color: "#ebcb8b",
+    items: [
+      { id: "q11", tag: "[자극 디톡스]", text: "과도한 정보, SNS, 업무 연락 등 외부 자극에서 잠시 벗어나 뇌에 온전한 쉼을 주는 시간을 갖고 있나요?" },
+      { id: "q12", tag: "[경계 설정]", text: "내 에너지가 고갈되었거나 한계를 넘을 때, 무리하지 않고 정중하게 '아니오'라고 선을 그을 수 있나요?" },
+      { id: "q13", tag: "[속도 조율]", text: "해야 할 일 목록에만 쫓기기보다, 지금 내 에너지와 우선순위에 맞춰 일상의 속도를 늦추거나 조절하고 있나요?" },
+      { id: "q14", tag: "[순수한 지적 충전]", text: "의무나 성과를 위한 공부가 아닌, 오롯이 나의 순수한 호기심과 흥미를 채워주는 활동을 하고 있나요?" },
+      { id: "q15", tag: "[생각과의 거리두기]", text: "부정적인 생각이나 불안한 시나리오가 꼬리를 물 때, 생각에 휩쓸리지 않고 객관적으로 바라보며 한 걸음 물러설 수 있나요?" }
+    ]
+  },
+  {
+    title: "4. 사회·관계적 돌봄",
+    fullTitle: "4. 사회·관계적 돌봄 (Relational)",
+    desc: "안전한 지지망, 관계적 안전감, 건강한 상호작용",
+    color: "#d08770",
+    items: [
+      { id: "q16", tag: "[안전한 연결]", text: "마음이 버겁거나 지칠 때, 내 취약함을 솔직히 털어놓을 수 있는 안전한 사람(또는 공간)이 있나요?" },
+      { id: "q17", tag: "[소모적 관계 차단]", text: "나를 갉아먹거나 비하하는 등 에너지를 지속적으로 소모시키는 관계로부터 거리를 두어 나를 보호해 주고 있나요?" },
+      { id: "q18", tag: "[수용받는 경험]", text: "타인의 평가나 눈치를 보지 않고, 있는 그대로의 내 모습으로 편안하게 머무를 수 있는 관계 속에서 시간을 보낼 수 있나요?" },
+      { id: "q19", tag: "[정서적 분리]", text: "타인의 감정에 지나치게 휩쓸리지 않고, '내 몫'과 '상대방의 몫'을 건강하게 구분할 수 있나요?" },
+      { id: "q20", tag: "[솔직한 소통]", text: "관계 안에서 나의 필요, 바라는 점, 혹은 불편한 감정을 참아 넘기지 않고 솔직하고 부드럽게 표현하고 있나요?" }
+    ]
+  }
+];
+
+const options = [
+  { val: 1, label: "전혀 아니다" },
+  { val: 2, label: "가끔 그렇다" },
+  { val: 3, label: "대체로 그렇다" },
+  { val: 4, label: "늘 그렇다" }
+];
+
+// 문항 렌더링
+const container = document.getElementById("questions-container");
+
+domains.forEach((domain) => {
+  const dTitle = document.createElement("div");
+  dTitle.className = "section-title";
+  dTitle.textContent = domain.fullTitle;
+  container.appendChild(dTitle);
+
+  const dDesc = document.createElement("div");
+  dDesc.className = "section-desc";
+  dDesc.textContent = domain.desc;
+  container.appendChild(dDesc);
+
+  domain.items.forEach((item) => {
+    const card = document.createElement("div");
+    card.className = "question-card";
+
+    const qText = document.createElement("div");
+    qText.className = "question-text";
+    qText.innerHTML = `<span class="question-tag">${item.tag}</span> ${item.text}`;
+    card.appendChild(qText);
+
+    const optsDiv = document.createElement("div");
+    optsDiv.className = "options-grid";
+
+    options.forEach((opt) => {
+      const label = document.createElement("label");
+      label.className = "option-label";
+      label.innerHTML = `
+        <input type="radio" name="${item.id}" value="${opt.val}" required>
+        ${opt.label}
+      `;
+
+      label.querySelector("input").addEventListener("change", (e) => {
+        const parent = label.parentElement;
+        parent.querySelectorAll(".option-label").forEach(l => l.classList.remove("active"));
+        if (e.target.checked) label.classList.add("active");
+      });
+
+      optsDiv.appendChild(label);
+    });
+
+    card.appendChild(optsDiv);
+    container.appendChild(card);
+  });
+});
+
+// 진단 제출 처리
+document.getElementById("quiz-form").addEventListener("submit", function(e) {
+  e.preventDefault();
+
+  let totalScore = 0;
+  const domainScores = [];
+  const chartLabels = [];
+  const chartValues = [];
+  const chartColors = [];
+
+  domains.forEach(domain => {
+    let dScore = 0;
+    domain.items.forEach(item => {
+      const selected = document.querySelector(`input[name="${item.id}"]:checked`);
+      if (selected) {
+        dScore += parseInt(selected.value, 10);
+      }
+    });
+    totalScore += dScore;
+    domainScores.push({ title: domain.title, score: dScore, color: domain.color });
+    chartLabels.push(domain.title);
+    chartValues.push(dScore);
+    chartColors.push(domain.color);
+  });
+
+  // 종합 점수 해석 (완화된 기준 적용)
+  const scoreBadge = document.getElementById("total-score");
+  const statusEl = document.getElementById("result-status");
+  const descEl = document.getElementById("result-desc");
+
+  scoreBadge.textContent = totalScore;
+
+  if (totalScore >= 58) {
+    statusEl.textContent = "🌱 풍요로운 상태 (Thriving)";
+    statusEl.style.color = "#2e7d32";
+    descEl.textContent = "다양한 영역에서 자신을 돌보는 자원이 안정적으로 작동하고 있습니다. 지금처럼 나를 편안하게 해주는 작은 루틴들을 기분 좋게 이어가 보세요.";
+  } else if (totalScore >= 42) {
+    statusEl.textContent = "🌿 일상 유지 상태 (Balanced)";
+    statusEl.style.color = "#4a6fa5";
+    descEl.textContent = "바쁜 일상 속에서도 나름의 균형을 잘 지켜내고 있는 건강한 상태입니다. 점수가 조금 낮은 영역이 있다면 가벼운 환기를 선물해 보세요.";
+  } else if (totalScore >= 28) {
+    statusEl.textContent = "🍂 쉼이 필요한 상태 (Needs Rest)";
+    statusEl.style.color = "#d08770";
+    descEl.textContent = "최근 여러 일들로 인해 에너지가 제법 소모된 상태입니다. 자책하기보다 그동안 애쓴 나를 인정해 주고, 가장 부담 없는 작은 쉼부터 허락해 주세요.";
+  } else {
+    statusEl.textContent = "☕ 돌봄 집중 상태 (Recharge Needed)";
+    statusEl.style.color = "#c53929";
+    descEl.textContent = "일상의 무게로 인해 과부하가 찾아왔을 수 있습니다. 불필요한 일들을 잠시 내려놓고, 충분한 수면과 안전한 휴식을 최우선으로 챙겨주세요.";
+  }
+
+  // 영역별 바 렌더링
+  const domainContainer = document.getElementById("domain-results");
+  domainContainer.innerHTML = "";
+
+  domainScores.forEach(d => {
+    const pct = (d.score / 20) * 100;
+    const itemDiv = document.createElement("div");
+    itemDiv.className = "domain-item";
+    itemDiv.innerHTML = `
+      <div class="domain-header">
+        <span>${d.title}</span>
+        <span>${d.score} / 20점</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" style="width: ${pct}%; background-color: ${d.color};"></div>
+      </div>
+    `;
+    domainContainer.appendChild(itemDiv);
+  });
+
+  // 파이(도넛) 차트 렌더링
+  const ctx = document.getElementById('carePieChart').getContext('2d');
+  if (chartInstance) {
+    chartInstance.destroy();
+  }
+
+  chartInstance = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: chartLabels,
+      datasets: [{
+        data: chartValues,
+        backgroundColor: chartColors,
+        borderWidth: 2,
+        borderColor: '#ffffff',
+        hoverOffset: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            font: { size: 12 },
+            padding: 14,
+            usePointStyle: true
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              const label = context.label || '';
+              const val = context.parsed || 0;
+              return ` ${label}: ${val}점 (20점 만점)`;
+            }
+          }
+        }
+      },
+      cutout: '58%'
+    }
+  });
+
+  const resBox = document.getElementById("result-container");
+  resBox.style.display = "block";
+  resBox.scrollIntoView({ behavior: "smooth" });
+});
+</script>
+
+</body>
+</html>
