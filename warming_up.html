@@ -385,14 +385,14 @@
     <!-- 10개 카드 그리드 -->
     <div class="cards-grid" id="cardsContainer"></div>
 
-    <!-- 하단 푸터 -->
+    <!-- 하단 푸터 (이메일 변경 및 저작권) -->
     <div class="slide-footer">
       <div class="footer-left">
         <button class="tool-btn" onclick="toggleFullScreen()">🖥️ 전체화면</button>
         <button class="tool-btn" onclick="resetVisited()">🔄 체크 초기화</button>
       </div>
       <div class="footer-right">
-        <span>Contact: <a href="mailto:dodam0626@gmail.com">dodam0626@gmail.com</a></span>
+        <span>Contact: <a href="mailto:dodam0909@gmail.com">dodam0909@gmail.com</a></span>
         <span>|</span>
         <span>Profile: <a href="https://bit.ly/walk_tgt" target="_blank" rel="noopener noreferrer">bit.ly/walk_tgt</a></span>
         <span>|</span>
@@ -431,6 +431,7 @@
   </div>
 
   <script>
+    // 10가지 자기돌봄 질문 데이터
     const gameData = [
       {
         id: 1,
@@ -547,6 +548,7 @@
     let visitedCards = JSON.parse(localStorage.getItem('selfcare_visited_cards')) || [];
     let currentCardId = null;
 
+    // 카드 그리드 렌더링
     function renderCards() {
       const container = document.getElementById('cardsContainer');
       container.innerHTML = '';
@@ -570,6 +572,7 @@
       });
     }
 
+    // 질문 팝업 열기
     function openModal(cardId) {
       currentCardId = cardId;
       const data = gameData.find(item => item.id === cardId);
@@ -591,10 +594,12 @@
       document.getElementById('questionModal').classList.add('active');
     }
 
+    // 팝업 닫기
     function closeModal() {
       document.getElementById('questionModal').classList.remove('active');
     }
 
+    // 이야기 완료 체크 표시
     function markAsAnswered() {
       if (currentCardId && !visitedCards.includes(currentCardId)) {
         visitedCards.push(currentCardId);
@@ -608,6 +613,7 @@
       if (e.target.id === 'questionModal') closeModal();
     }
 
+    // 체크 초기화
     function resetVisited() {
       if (confirm("완료 표시(✓)를 모두 초기화할까요?")) {
         visitedCards = [];
@@ -616,6 +622,7 @@
       }
     }
 
+    // 전체화면 토글
     function toggleFullScreen() {
       if (!document.fullscreenElement) {
         document.documentElement.requestFullscreen().catch(() => {});
@@ -624,44 +631,8 @@
       }
     }
 
+    // 최초 실행
     renderCards();
   </script>
 </body>
 </html>
-```eof
-
-### 적용 방법
-1. GitHub 저장소에서 **`warming_up.html`** 파일을 엽니다.
-2. 우측 상단 **연필 아이콘(Edit this file)**을 누릅니다.
-3. 기존 내용을 전부 선택(`Ctrl + A`) 후 지우고, 위 코드 블록 전체를 복사해서 붙여넣습니다.
-4. 우측 상단 **[Commit changes...]** 버튼을 눌러 저장합니다.
-5. 1~2분 뒤 새로고침(`Ctrl + Shift + R`)하시면 맨 아래 지저분한 문구 없이 화면이 깔끔하게 나옵니다!웹페이지 하단에 AI와의 대화 답변 텍스트(```eof...)가 HTML 파일 끝부분에 그대로 붙어 들어가서 화면에 출력되고 있는 상태입니다. 
-
-HTML 파일 코드 맨 끝에서 해당 텍스트를 지워주시면 바로 해결됩니다.
-
-<Steps>
-  <Step title="HTML 파일 열기" subtitle="편집기">
-    현재 사이트의 원본 소스 파일(`index.html` 등)을 텍스트 편집기나 코드 에디터로 엽니다.
-  </Step>
-
-  <Step title="코드 맨 끝부분 확인">
-    파일의 가장 아래쪽(마지막 줄)으로 이동합니다.
-  </Step>
-
-  <Step title="불필요한 안내 텍스트 삭제">
-    `</html>` 태그 바깥이나 파일 끝자락에 들어가 있는 아래 내용 전체를 드래그해서 완전히 삭제합니다:
-    ```text
-    ```eof 하단 푸터의 저작권 문구를 `Copyright © 2026. 박도담. All Rights Reserved.`로 변경했습니다... (이하 문장 전체)
-    ```
-    > **참고:** 정상적인 파일의 마지막은 `</body>`와 `</html>` 태그로 끝나야 합니다.
-  </Step>
-
-  <Step subtitle="확인" title="저장 및 새로고침">
-    파일을 저장한 뒤 웹 브라우저에서 `Ctrl + Shift + R` (Mac은 `Cmd + Shift + R`)을 눌러 강력 새로고침합니다. 하단에 표시되던 안내 텍스트가 사라졌는지 확인하세요.
-  </Step>
-</Steps>
-
-<Elicitations message="작업 중 막히거나 추가 수정이 필요하신가요?">
-  <Elicitation label="코드 직접 확인하기" query="내 HTML 파일 마지막 부분 코드를 봐줄 테니 검토해줘."/>
-  <Elicitation label="푸터 텍스트 수정" query="하단 푸터 정보(이메일, 링크 등)를 추가로 수정하고 싶어."/>
-</Elicitations>
