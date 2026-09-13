@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>자기돌봄(Self-Care) 20문항 자가진단 | Counselor Dodam Park</title>
+  <title>자기돌봄(Self-Care) 20문항 자가진단 | Psychotherapist Dodam Park</title>
   <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
@@ -37,7 +37,6 @@
       position: relative;
     }
 
-    /* 언어 전환 버튼 */
     .lang-toggle-bar {
       display: flex;
       justify-content: flex-end;
@@ -145,7 +144,7 @@
       gap: 8px;
     }
 
-    @media (max-width: 520px) {
+    @media (max-width: 540px) {
       .options-grid {
         grid-template-columns: repeat(2, 1fr);
       }
@@ -165,6 +164,7 @@
       transition: all 0.15s ease;
       background: #fafbfc;
       user-select: none;
+      line-height: 1.35;
     }
 
     .option-label input {
@@ -279,6 +279,23 @@
       transition: width 0.4s ease;
     }
 
+    .domain-feedback-box {
+      background: #f0f4f9;
+      border-left: 4px solid var(--primary);
+      border-radius: 8px;
+      padding: 18px 20px;
+      margin-bottom: 24px;
+      font-size: 0.92rem;
+      line-height: 1.7;
+    }
+
+    .domain-feedback-box h4 {
+      font-size: 0.98rem;
+      color: var(--primary);
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
     .reflection-box {
       background: #fdfbf7;
       border: 1px solid #ebd8c8;
@@ -364,11 +381,14 @@
       <p style="font-size: 0.9rem; color: var(--text-muted);" id="ui-res-subtitle">나의 자기돌봄 종합 점수</p>
       <div class="total-score-badge">
         <span id="total-score">0</span> 
-        <span style="font-size: 1.1rem; color: var(--text-muted);" id="ui-res-maxscore">/ 80점</span>
+        <span style="font-size: 1.1rem; color: var(--text-muted);" id="ui-res-maxscore">/ 60점</span>
       </div>
       <div id="result-status" class="result-status"></div>
       <p id="result-desc" class="result-desc"></p>
     </div>
+
+    <!-- 맞춤 영역별 설명 카드 -->
+    <div class="domain-feedback-box" id="ui-domain-feedback"></div>
 
     <!-- 도넛 차트 -->
     <div class="chart-box">
@@ -376,17 +396,15 @@
     </div>
 
     <div class="domain-list">
-      <h3 style="font-size: 1.05rem; margin-bottom: 16px; color: var(--text-main);" id="ui-domain-heading">📊 영역별 점수 프로필 (각 20점 만점)</h3>
+      <h3 style="font-size: 1.05rem; margin-bottom: 16px; color: var(--text-main);" id="ui-domain-heading">📊 영역별 점수 프로필 (각 15점 만점)</h3>
       <div id="domain-results"></div>
     </div>
 
-    <div class="reflection-box" id="ui-reflection-box">
-      <!-- 스크립트에서 동적 렌더링 -->
-    </div>
+    <div class="reflection-box" id="ui-reflection-box"></div>
   </div>
 
   <footer>
-    <p id="ui-footer-copy">© 2026 <strong>상담사 박도담</strong>. All rights reserved.</p>
+    <p id="ui-footer-copy">© 2026 <strong>심리상담사 박도담</strong>. All rights reserved.</p>
     <div class="footer-links">
       <span>📧 <a href="mailto:dodam0909@gmail.com">dodam0909@gmail.com</a></span>
       <span>🔗 <a href="https://bit.ly/walk_tgt" target="_blank" rel="noopener noreferrer" id="ui-footer-profile">프로필 페이지</a></span>
@@ -397,7 +415,7 @@
 <script>
 let currentLang = "ko";
 let chartInstance = null;
-let savedAnswers = {}; // 언어 변경 시 입력값 유지
+let savedAnswers = {};
 
 const i18n = {
   ko: {
@@ -407,41 +425,48 @@ const i18n = {
     introBox: "이 검사는 나를 평가하기 위한 시험지가 아닙니다. 지금 내 에너지가 어디에 닿고 있는지, 잠시 소홀했던 영역은 어디인지 <strong>판단 없이 부드럽게 알아차리기 위한 지도</strong>입니다.",
     submitBtn: "진단 결과 확인하기",
     resSubtitle: "나의 자기돌봄 종합 점수",
-    resMaxScore: "/ 80점",
-    domainHeading: "📊 영역별 점수 프로필 (각 20점 만점)",
+    resMaxScore: "/ 60점",
+    domainHeading: "📊 영역별 점수 프로필 (각 15점 만점)",
     scoreUnit: "점",
+    feedbackHeading: "💡 영역별 맞춤 코멘트",
     reflectionTitle: "💬 머물러보기 위한 셀프 성찰",
     reflectionHigh: "<strong>가장 높은 영역:</strong> 현재 지친 일상 속에서 나를 안전하게 지탱해 주는 핵심 버팀목입니다.",
     reflectionLow: "<strong>가장 낮은 영역:</strong> 죄책감을 갖지 마세요. 그동안 신경 쓸 여력이 부족할 만큼 애써왔다는 신호입니다. 오늘 나에게 줄 수 있는 <strong>'단 5분짜리 작은 쉼'</strong>은 무엇일까요?",
-    footerCopy: "© 2026 <strong>상담사 박도담</strong>. All rights reserved.",
+    footerCopy: "© 2026 <strong>심리상담사 박도담</strong>. All rights reserved.",
     profileLink: "프로필 페이지",
     options: [
-      { val: 1, label: "전혀 아니다" },
-      { val: 2, label: "가끔 그렇다" },
-      { val: 3, label: "대체로 그렇다" },
-      { val: 4, label: "늘 그렇다" }
+      { val: 0, label: "0점<br>(전혀/거의 그렇지 않다)" },
+      { val: 1, label: "1점<br>(가끔 그렇다)" },
+      { val: 2, label: "2점<br>(대체로 그렇다)" },
+      { val: 3, label: "3점<br>(거의/항상 그렇다)" }
     ],
     status: {
       thriving: {
         title: "🌱 풍요로운 상태 (Thriving)",
-        desc: "다양한 영역에서 자신을 돌보는 자원이 안정적으로 작동하고 있습니다. 지금처럼 나를 편안하게 해주는 작은 루틴들을 기분 좋게 이어가 보세요."
+        desc: "다양한 영역에서 자신을 돌보는 자원이 안정적으로 작동하고 있습니다. 완벽하지 않아도 괜찮으니, 지금처럼 나를 편안하게 해주는 작은 루틴들을 기분 좋게 이어가 보세요."
       },
       balanced: {
         title: "🌿 일상 유지 상태 (Balanced)",
-        desc: "바쁜 일상 속에서도 나름의 균형을 잘 지켜내고 있는 건강한 상태입니다. 점수가 조금 낮은 영역이 있다면 가벼운 환기를 선물해 보세요."
+        desc: "바쁜 일상 속에서도 나름의 균형을 잘 지켜내고 있는 건강한 상태입니다. 컨디션에 따라 에너지가 조금 빠져나간 영역이 보인다면 가벼운 환기를 선물해 주세요."
       },
       needsRest: {
         title: "🍂 쉼이 필요한 상태 (Needs Rest)",
-        desc: "최근 여러 일들로 인해 에너지가 제법 소모된 상태입니다. 자책하기보다 그동안 애쓴 나를 인정해 주고, 가장 부담 없는 작은 쉼부터 허락해 주세요."
+        desc: "최근 여러 일들로 인해 내면의 에너지가 제법 소모된 상태입니다. 자책하기보다 그동안 무리해 온 몸과 마음을 인정해 주고, 가장 부담 없는 작은 쉼부터 허락해 주세요."
       },
       recharge: {
         title: "☕ 돌봄 집중 상태 (Recharge Needed)",
-        desc: "일상의 무게로 인해 과부하가 찾아왔을 수 있습니다. 불필요한 일들을 잠시 내려놓고, 충분한 수면과 안전한 휴식을 최우선으로 챙겨주세요."
+        desc: "일상의 무게로 인해 번아웃에 가까운 과부하가 찾아왔을 수 있습니다. 불필요한 일들을 잠시 내려놓은 뒤, 충분한 수면과 안전한 휴식에 온전히 머물러 보세요."
       }
+    },
+    careAdvice: {
+      0: "내 몸의 신호에 귀 기울이며 따뜻한 물 한 잔 마시기, 깊은 복식호흡, 가벼운 스트레칭처럼 <strong>몸의 긴장을 가라앉히는 작은 움직임</strong>을 먼저 허락해 보세요.",
+      1: "올라오는 감정을 비판 없이 '그럴 수 있지'라며 안아주고, <strong>소중한 친구를 대하듯 나에게 다정한 말 한마디</strong>를 건네는 자기자비의 시간을 가져보세요.",
+      2: "스마트폰과 외부 정보 자극을 잠시 차단하고, <strong>해야 할 일의 속도를 늦추거나 부담스러운 요청에 부드럽게 '아니오'라고 선을 긋는 연습</strong>을 해보세요.",
+      3: "나를 소모시키는 관계와는 건강한 거리를 두고, <strong>있는 그대로의 내 모습으로도 안전함을 느낄 수 있는 편안한 관계나 나만의 안전지대</strong>에 머물러 보세요."
     },
     domains: [
       {
-        shortTitle: "1. 신체적 돌봄",
+        shortTitle: "신체적 돌봄",
         fullTitle: "1. 신체적 돌봄 (Physical)",
         desc: "신체 감각 인지, 생리적 안정, 자율신경계 조절 및 회복",
         color: "#5e81ac",
@@ -454,7 +479,7 @@ const i18n = {
         ]
       },
       {
-        shortTitle: "2. 정서적 돌봄",
+        shortTitle: "정서적 돌봄",
         fullTitle: "2. 정서적 돌봄 (Emotional)",
         desc: "감정 수용, 자기자비, 안전한 정서 표출 및 심리적 회복",
         color: "#a3be8c",
@@ -467,7 +492,7 @@ const i18n = {
         ]
       },
       {
-        shortTitle: "3. 인지적 돌봄",
+        shortTitle: "인지적 돌봄",
         fullTitle: "3. 인지적 돌봄 (Intellectual)",
         desc: "인지적 휴식, 심리적 탈밀착, 건강한 한계 설정(Boundaries)",
         color: "#ebcb8b",
@@ -480,7 +505,7 @@ const i18n = {
         ]
       },
       {
-        shortTitle: "4. 사회·관계적 돌봄",
+        shortTitle: "관계적 돌봄",
         fullTitle: "4. 사회·관계적 돌봄 (Relational)",
         desc: "안전한 지지망, 관계적 안전감, 건강한 상호작용",
         color: "#d08770",
@@ -501,19 +526,20 @@ const i18n = {
     introBox: "This is not an evaluation or a test. It is a <strong>compassionate map to notice without judgment</strong> where your energy is currently flowing and which areas may need a gentle pause.",
     submitBtn: "View My Assessment Results",
     resSubtitle: "Overall Self-Care Score",
-    resMaxScore: "/ 80 pts",
-    domainHeading: "📊 Domain Breakdown (Max 20 pts each)",
+    resMaxScore: "/ 60 pts",
+    domainHeading: "📊 Domain Breakdown (Max 15 pts each)",
     scoreUnit: "pts",
+    feedbackHeading: "💡 Personalized Domain Insights",
     reflectionTitle: "💬 Gentle Reflection for You",
     reflectionHigh: "<strong>Highest Domain:</strong> Your vital anchor and internal resource that currently keeps you grounded and safe.",
     reflectionLow: "<strong>Lowest Domain:</strong> Please let go of self-blame. It simply signals that you have been working hard without enough room to attend here. What is <strong>one tiny 5-minute pause</strong> you can offer yourself today?",
-    footerCopy: "© 2026 <strong>Counselor Dodam Park</strong>. All rights reserved.",
+    footerCopy: "© 2026 <strong>Psychotherapist Dodam Park</strong>. All rights reserved.",
     profileLink: "Profile Page",
     options: [
-      { val: 1, label: "Rarely / Never" },
-      { val: 2, label: "Sometimes" },
-      { val: 3, label: "Often" },
-      { val: 4, label: "Almost Always" }
+      { val: 0, label: "0 pt<br>(Never / Rarely)" },
+      { val: 1, label: "1 pt<br>(Sometimes)" },
+      { val: 2, label: "2 pts<br>(Often)" },
+      { val: 3, label: "3 pts<br>(Almost Always)" }
     ],
     status: {
       thriving: {
@@ -533,9 +559,15 @@ const i18n = {
         desc: "You may be experiencing overload or burnout from daily pressures. Gently put down non-essential obligations and prioritize deep physical rest, sleep, and supportive spaces."
       }
     },
+    careAdvice: {
+      0: "Listen gently to your bodily sensations. Prioritize <strong>soothing your physical tension</strong> through simple acts: a warm glass of water, slow abdominal breathing, or gentle stretching.",
+      1: "Embrace difficult emotions with an accepting 'It is understandable.' Practice offering yourself <strong>words of kindness and warmth as you would to a dear friend</strong>.",
+      2: "Step away from screens and constant information input. <strong>Slow down your pace and practice setting gentle boundaries by saying 'no'</strong> to protect your cognitive capacity.",
+      3: "Maintain healthy boundaries from draining dynamics. Spend quiet time in <strong>supportive spaces or relationships where you feel accepted exactly as you are</strong>."
+    },
     domains: [
       {
-        shortTitle: "1. Physical Care",
+        shortTitle: "Physical Care",
         fullTitle: "1. Physical Self-Care",
         desc: "Somatic awareness, physiological grounding, and nervous system regulation",
         color: "#5e81ac",
@@ -548,7 +580,7 @@ const i18n = {
         ]
       },
       {
-        shortTitle: "2. Emotional Care",
+        shortTitle: "Emotional Care",
         fullTitle: "2. Emotional Self-Care",
         desc: "Emotional acceptance, self-compassion, safe expression, and resilience",
         color: "#a3be8c",
@@ -561,7 +593,7 @@ const i18n = {
         ]
       },
       {
-        shortTitle: "3. Intellectual Care",
+        shortTitle: "Intellectual Care",
         fullTitle: "3. Intellectual & Cognitive Care",
         desc: "Cognitive rest, cognitive defusion, and healthy boundaries",
         color: "#ebcb8b",
@@ -574,7 +606,7 @@ const i18n = {
         ]
       },
       {
-        shortTitle: "4. Relational Care",
+        shortTitle: "Relational Care",
         fullTitle: "4. Relational Self-Care",
         desc: "Safe support networks, relational safety, and authentic communication",
         color: "#d08770",
@@ -618,7 +650,7 @@ function renderUI() {
     </ul>
   `;
 
-  // 질문 렌더링
+  // 문항 렌더링
   const container = document.getElementById("questions-container");
   container.innerHTML = "";
 
@@ -671,7 +703,6 @@ function renderUI() {
     });
   });
 
-  // 이미 진단 결과가 열려있다면 언어에 맞춰 다시 계산 및 렌더링
   if (document.getElementById("result-container").style.display === "block") {
     calculateResults(false);
   }
@@ -691,7 +722,7 @@ function calculateResults(shouldScroll = true) {
   const chartValues = [];
   const chartColors = [];
 
-  t.domains.forEach(domain => {
+  t.domains.forEach((domain, index) => {
     let dScore = 0;
     domain.items.forEach(item => {
       const selected = document.querySelector(`input[name="${item.id}"]:checked`);
@@ -700,12 +731,13 @@ function calculateResults(shouldScroll = true) {
       }
     });
     totalScore += dScore;
-    domainScores.push({ title: domain.shortTitle, score: dScore, color: domain.color });
+    domainScores.push({ index: index, title: domain.shortTitle, score: dScore, color: domain.color });
     chartLabels.push(domain.shortTitle);
     chartValues.push(dScore);
     chartColors.push(domain.color);
   });
 
+  // 종합 점수 해석 (60점 만점 기준)
   const scoreBadge = document.getElementById("total-score");
   const statusEl = document.getElementById("result-status");
   const descEl = document.getElementById("result-desc");
@@ -715,13 +747,13 @@ function calculateResults(shouldScroll = true) {
   let currentStatus = t.status.thriving;
   let statusColor = "#2e7d32";
 
-  if (totalScore >= 58) {
+  if (totalScore >= 44) {
     currentStatus = t.status.thriving;
     statusColor = "#2e7d32";
-  } else if (totalScore >= 42) {
+  } else if (totalScore >= 32) {
     currentStatus = t.status.balanced;
     statusColor = "#4a6fa5";
-  } else if (totalScore >= 28) {
+  } else if (totalScore >= 20) {
     currentStatus = t.status.needsRest;
     statusColor = "#d08770";
   } else {
@@ -733,18 +765,42 @@ function calculateResults(shouldScroll = true) {
   statusEl.style.color = statusColor;
   descEl.textContent = currentStatus.desc;
 
+  // 영역별 맞춤 분석
+  let highestDomain = domainScores[0];
+  let lowestDomain = domainScores[0];
+
+  domainScores.forEach(d => {
+    if (d.score > highestDomain.score) highestDomain = d;
+    if (d.score < lowestDomain.score) lowestDomain = d;
+  });
+
+  const feedbackBox = document.getElementById("ui-domain-feedback");
+  if (currentLang === "ko") {
+    feedbackBox.innerHTML = `
+      <h4>${t.feedbackHeading}</h4>
+      <p>현재 <strong>'${highestDomain.title}'</strong> 영역(${highestDomain.score}/15점)에서 스스로를 보살피는 힘이 가장 든든하게 작용하고 있습니다.</p>
+      <p style="margin-top: 6px;">반면 <strong>'${lowestDomain.title}'</strong> 영역(${lowestDomain.score}/15점)은 최근 상대적으로 돌봄의 손길이 닿기 어려웠던 것으로 보입니다. ${t.careAdvice[lowestDomain.index]}</p>
+    `;
+  } else {
+    feedbackBox.innerHTML = `
+      <h4>${t.feedbackHeading}</h4>
+      <p>Currently, <strong>'${highestDomain.title}'</strong> (${highestDomain.score}/15 pts) serves as your strongest supportive anchor.</p>
+      <p style="margin-top: 6px;">On the other hand, <strong>'${lowestDomain.title}'</strong> (${lowestDomain.score}/15 pts) appears to have had less room to be nourished recently. ${t.careAdvice[lowestDomain.index]}</p>
+    `;
+  }
+
   // 영역별 바 차트 갱신
   const domainContainer = document.getElementById("domain-results");
   domainContainer.innerHTML = "";
 
   domainScores.forEach(d => {
-    const pct = (d.score / 20) * 100;
+    const pct = (d.score / 15) * 100;
     const itemDiv = document.createElement("div");
     itemDiv.className = "domain-item";
     itemDiv.innerHTML = `
       <div class="domain-header">
         <span>${d.title}</span>
-        <span>${d.score} / 20 ${t.scoreUnit}</span>
+        <span>${d.score} / 15 ${t.scoreUnit}</span>
       </div>
       <div class="progress-bar-bg">
         <div class="progress-bar-fill" style="width: ${pct}%; background-color: ${d.color};"></div>
@@ -788,7 +844,7 @@ function calculateResults(shouldScroll = true) {
             label: function(context) {
               const label = context.label || '';
               const val = context.parsed || 0;
-              return ` ${label}: ${val} / 20 ${t.scoreUnit}`;
+              return ` ${label}: ${val} / 15 ${t.scoreUnit}`;
             }
           }
         }
@@ -805,14 +861,12 @@ function calculateResults(shouldScroll = true) {
   }
 }
 
-// 폼 제출 이벤트
 document.getElementById("quiz-form").addEventListener("submit", function(e) {
   e.preventDefault();
   saveCurrentInputs();
   calculateResults(true);
 });
 
-// 초기화 실행
 renderUI();
 </script>
 
